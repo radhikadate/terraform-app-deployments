@@ -1,0 +1,7 @@
+.env
+.terraform/
+*.tfstate
+*.tfstate.backup
+.env
+*.pem
+*.key
