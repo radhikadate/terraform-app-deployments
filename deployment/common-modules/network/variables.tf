@@ -7,7 +7,7 @@ variable "cidr_block" {
 variable "project" {
   description = "the name of the project for which network is being created"
   type = string
-  default = "dev"
+  default = "deployments"
 }
 
 variable "environment" {
@@ -16,7 +16,6 @@ variable "environment" {
  validation {
   condition = contains(["dev", "test", "prod"], var.environment)
   error_message = "Environment must be dev, staging, or prod."
-   
  }
  
 }

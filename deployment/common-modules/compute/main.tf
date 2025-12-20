@@ -4,7 +4,7 @@ data "aws_ami" "amazon_linux" {
 
   filter {
     name   = "name"
-    values = ["amzn2-ami-hvm-*-x86_64-gp2"]
+    values = ["al2023-ami-2023.*-kernel-6.1-x86_64"]
   }
 }
 
@@ -23,7 +23,14 @@ resource "aws_security_group" "ec2_sg" {
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = "Your IP goes here"
+  }
+
+  ingress {
+  from_port   = 4000
+  to_port     = 4000
+  protocol    = "tcp"
+  cidr_blocks = "Your IP goes here"
   }
 
   egress {
@@ -45,8 +52,8 @@ resource "aws_instance" "app_server" {
   key_name              = var.key_name
   subnet_id             = var.subnet_id
   vpc_security_group_ids = [aws_security_group.ec2_sg.id]
-
-  user_data = file("${path.module}/../../../hello-world-app/app.py")
+  associate_public_ip_address = true
+  user_data = file("${path.module}/user_data.sh")
 
   tags = {
     Name        = "${var.environment}-app-server"
