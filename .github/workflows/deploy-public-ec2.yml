@@ -1,0 +1,8 @@
+name: Deploy Public EC2
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
