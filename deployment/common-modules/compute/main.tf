@@ -23,14 +23,14 @@ resource "aws_security_group" "ec2_sg" {
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
-    cidr_blocks = "Your IP goes here"
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   ingress {
-  from_port   = 4000
-  to_port     = 4000
-  protocol    = "tcp"
-  cidr_blocks = "Your IP goes here"
+    from_port   = 4000
+    to_port     = 4000
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   egress {
