@@ -38,3 +38,36 @@ jobs:
         env:
           TF_VAR_key_name: ${{ secrets.TF_VAR_KEY_NAME }}
           TF_VAR_environment: dev
+      
+      - name: Get Public IP
+        id: get_ip
+        run: |
+          PUBLIC_IP=$(terraform output -raw instance_public_ip)
+          echo "public_ip=$PUBLIC_IP" >> $GITHUB_OUTPUT
+          echo "EC2 Public IP: $PUBLIC_IP"
+        working-directory: ./deployment/public-ec2-deployment/terraform
+      
+      - name: Test Application
+        run: |
+          PUBLIC_IP="${{ steps.get_ip.outputs.public_ip }}"
+          echo "Testing Flask app at http://$PUBLIC_IP:4000"
+          
+          MAX_RETRIES=20
+          RETRY_DELAY=30
+          
+          for i in $(seq 1 $MAX_RETRIES); do
+            echo "Attempt $i of $MAX_RETRIES..."
+            
+            if curl -f -s --connect-timeout 10 "http://$PUBLIC_IP:4000" | grep -q "Hello World"; then
+              echo "✅ Success! Application is responding correctly."
+              exit 0
+            fi
+            
+            if [ $i -lt $MAX_RETRIES ]; then
+              echo "App not ready yet. Waiting ${RETRY_DELAY}s before retry..."
+              sleep $RETRY_DELAY
+            fi
+          done
+          
+          echo "❌ Failed: Application did not respond after $MAX_RETRIES attempts"
+          exit 1
