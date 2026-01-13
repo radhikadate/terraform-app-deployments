@@ -1,6 +1,8 @@
 from flask import Flask
 import requests
 import socket
+import hashlib
+import time
 
 app = Flask(__name__)
 
@@ -31,6 +33,21 @@ def hello():
     az = get_availability_zone()
     hostname = socket.gethostname()
     return f"Hello World from {az}! (Host: {hostname})"
+
+@app.route('/stress')
+def stress():
+    """CPU-intensive endpoint to trigger auto-scaling"""
+    az = get_availability_zone()
+    hostname = socket.gethostname()
+    
+    # Generate CPU load for 2 seconds
+    start = time.time()
+    result = 0
+    while time.time() - start < 2:
+        # CPU-intensive hash computation
+        result = hashlib.sha256(str(result).encode()).hexdigest()
+    
+    return f"Stress test completed on {az}! (Host: {hostname})"
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=4000)
