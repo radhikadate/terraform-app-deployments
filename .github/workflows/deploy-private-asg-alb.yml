@@ -1,0 +1,73 @@
+name: Deploy Private ASG with ALB
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-south-1
+      
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+      
+      - name: Terraform Init
+        run: terraform init
+        working-directory: ./deployment/private-asg-with-lb-deployment/terraform
+      
+      - name: Terraform Plan
+        run: terraform plan
+        working-directory: ./deployment/private-asg-with-lb-deployment/terraform
+        env:
+          TF_VAR_key_name: ${{ secrets.TF_VAR_KEY_NAME }}
+          TF_VAR_environment: dev
+      
+      - name: Terraform Apply
+        run: terraform apply -auto-approve
+        working-directory: ./deployment/private-asg-with-lb-deployment/terraform
+        env:
+          TF_VAR_key_name: ${{ secrets.TF_VAR_KEY_NAME }}
+          TF_VAR_environment: dev
+      
+      - name: Get ALB DNS Name
+        id: get_alb
+        run: |
+          ALB_DNS=$(terraform output -raw alb_dns_name)
+          echo "alb_dns=$ALB_DNS" >> $GITHUB_OUTPUT
+          echo "ALB DNS Name: $ALB_DNS"
+        working-directory: ./deployment/private-asg-with-lb-deployment/terraform
+      
+      - name: Test Application
+        run: |
+          ALB_DNS="${{ steps.get_alb.outputs.alb_dns }}"
+          echo "Testing Flask app at http://$ALB_DNS"
+          
+          MAX_RETRIES=20
+          RETRY_DELAY=30
+          
+          for i in $(seq 1 $MAX_RETRIES); do
+            echo "Attempt $i of $MAX_RETRIES..."
+            
+            if curl -f -s --connect-timeout 10 "http://$ALB_DNS" | grep -q "Hello World"; then
+              echo "✅ Success! Application is responding correctly via ALB."
+              exit 0
+            fi
+            
+            if [ $i -lt $MAX_RETRIES ]; then
+              echo "App not ready yet. Waiting ${RETRY_DELAY}s before retry..."
+              sleep $RETRY_DELAY
+            fi
+          done
+          
+          echo "❌ Failed: Application did not respond after $MAX_RETRIES attempts"
+          exit 1
