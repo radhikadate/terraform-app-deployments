@@ -6,7 +6,7 @@ module "application_network_multi_az" {
 
 resource "aws_security_group" "alb_sg" {
   name_prefix = "${var.environment}-alb-sg"
-  vpc_id      = module.application_network.vpc_id
+  vpc_id      = module.application_network_multi_az.vpc_id
 
   ingress {
     from_port   = 80
