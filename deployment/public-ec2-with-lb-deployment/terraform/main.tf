@@ -1,5 +1,5 @@
 module "application_network_multi_az" {
-  source = "../../common-modules/network"
+  source = "../../common-modules/network-multi-az"
   cidr_block = "10.0.0.0/16"
   environment = var.environment
 }
@@ -39,8 +39,8 @@ module "application_compute" {
 module "application_alb" {
   source              = "../../common-modules/alb"
   environment         = var.environment
-  vpc_id              = module.application_network.vpc_id
-  public_subnet_ids   = module.application_network.public_subnet_ids
+  vpc_id              = module.application_network_multi_az.vpc_id
+  public_subnet_ids   = module.application_network_multi_az.public_subnet_ids
   target_instance_ids = module.application_compute.instance_ids
   alb_security_group_id = aws_security_group.alb_sg.id
 }
