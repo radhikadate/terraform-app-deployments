@@ -1,4 +1,4 @@
-name: Deploy Private EC2 with ALB
+name: Deploy Public EC2 with ALB
 
 on:
   workflow_dispatch:
