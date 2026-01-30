@@ -28,7 +28,7 @@ resource "aws_security_group" "alb_sg" {
 }
 
 module "application_compute" {
-  source = "../../common-modules/compute-multi-instance-public-subn"
+  source = "../../common-modules/compute-multi-instance-public-subnet"
   environment = var.environment
   vpc_id = module.application_network_multi_az.vpc_id
   public_subnet_ids = module.application_network_multi_az.public_subnet_ids
