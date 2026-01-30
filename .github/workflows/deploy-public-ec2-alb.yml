@@ -45,7 +45,7 @@ jobs:
           ALB_DNS=$(terraform output -raw alb_dns_name)
           echo "alb_dns=$ALB_DNS" >> $GITHUB_OUTPUT
           echo "ALB DNS Name: $ALB_DNS"
-        working-directory: ./deployment/private-ec2-with-lb-deployment/terraform
+        working-directory: ./deployment/public-ec2-with-lb-deployment/terraform
       
       - name: Test Application
         run: |
